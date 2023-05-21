@@ -24,7 +24,10 @@ type Schema struct {
 
 // Initialize initializes the database connection
 func Initialize() (*Database, error) {
-	connStr := "postgres://postgres:sam123@localhost/postgres?sslmode=disable" // TODO - Update the connection string
+	username := "postgres"
+	password := "sam123"
+	dbName := "postgres"
+	connStr := "postgres://" + username + ":" + password + "@localhost/" + dbName + "?sslmode=disable" // TODO - Update the connection string
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to the database: %v", err)
