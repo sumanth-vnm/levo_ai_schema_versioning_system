@@ -87,13 +87,24 @@ Follow the below steps, to set up the postgres database connection to the go pro
 ### API endpoints
 
 Following are the API endpoints implemented in this project:
+
 ```terminal
-localhost:8080/upload/schema - (POST) - to upload a new schema file[JSON/Yaml]
+localhost:8080/upload/schema - (POST) - to upload a new schema file[json/yaml]
+
 localhost:8080/getLatestSchema/{{filename}} - (GET) - to get the latest schema file
+
 localhost:8080/getSchemaByVersion/{{filename}}/{version} - (GET) - to get the schema file of a particular file name and version
+
 localhost:8080/getAllVersions/{{filename}} - (GET) - to get all the schema files
 ```
 
+### Postman collection
+
+The following postman collection can be used to test the API endpoints:
+
+```terminal
+
+```
 
 
 
