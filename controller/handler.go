@@ -12,7 +12,7 @@ import (
 
 	"example.com/levo_app/db"
 	"example.com/levo_app/storage"
-	yaml "gopkg.in/yaml.v2"
+	"example.com/levo_app/service"
 
 	"github.com/gorilla/mux"
 )
@@ -31,58 +31,14 @@ func NewAPIHandler(storage *storage.FileStore, database *db.Database) *APIHandle
 	}
 }
 
-// ValidateJSONSchema validates the JSON schema file
-func ValidateJSONSchema(schemaFile []byte) error {
-	var data interface{}
-	err := json.Unmarshal(schemaFile, &data)
-	if err != nil {
-		return fmt.Errorf("failed to parse JSON schema: %v", err)
-	}
-
-	return nil
-}
-
-// ValidateYAMLSchema validates the YAML schema file
-func ValidateYAMLSchema(schemaFile []byte) error {
-	var data interface{}
-	err := yaml.Unmarshal(schemaFile, &data)
-	if err != nil {
-		return fmt.Errorf("failed to parse YAML schema: %v", err)
-	}
-
-	return nil
-}
-
-// ValidateSchema validates the schema file based on its type (JSON or YAML)
-func ValidateSchema(schemaFile []byte, fileType string) error {
-	if fileType == "json" {
-		// Validate JSON schema
-		err := ValidateJSONSchema(schemaFile)
-		if err != nil {
-			return err
-		}
-	} else if fileType == "yaml" {
-		// Validate YAML schema
-		err := ValidateYAMLSchema(schemaFile)
-		if err != nil {
-			return err
-		}
-	} else {
-		return fmt.Errorf("unsupported file type: %s", fileType)
-	}
-
-	return nil
-}
-
 // UploadSchemaHandler handles the API for uploading a schema
 func (ah *APIHandler) UploadSchemaHandler(w http.ResponseWriter, r *http.Request) {
 	
-	fmt.Println("Upload Schema Handler Called")
+	
 	file, fileHeaders, err := r.FormFile("file")
-	fmt.Println("FormFile Called")
 	if err != nil {
 		fmt.Println("failed to read file", err)
-		http.Error(w, "failed to read file 1", http.StatusBadRequest)
+		http.Error(w, "failed to read file or 'file' field doesn't exist in request body", http.StatusBadRequest)
 		return
 	}
 	defer file.Close()
@@ -107,9 +63,9 @@ func (ah *APIHandler) UploadSchemaHandler(w http.ResponseWriter, r *http.Request
 
 
 	// Validate the schema file
-	err = ValidateSchema(schemaFile, fileType)
+	err = service.ValidateSchema(schemaFile, fileType)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("invalid schema: %v", err), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("INVALID SCHEMA: %v", err), http.StatusBadRequest)
 		return
 	}
 
@@ -142,21 +98,46 @@ func (ah *APIHandler) UploadSchemaHandler(w http.ResponseWriter, r *http.Request
 	err = ah.Database.SaveSchema(schema)
 	if err != nil {
 		http.Error(w, "failed to save schema", http.StatusInternalServerError)
-		// TODO remove from storage
+		// remove from storage as well
+		err := ah.Storage.DeleteSchema(schema.Filename, schema.Version)
+		if err != nil {
+			fmt.Println("failed to delete schema from storage:", err)
+		}
 		return
 	}
 
 	fmt.Println("Schema saved succesfully in database")
 
-	fmt.Fprintf(w, "Schema uploaded successfully")
-	// TODO give success response
+	// Give success response
+	resp := make(map[string]interface{})
+	resp["message"] = "Schema uploaded successfully"
+	resp["version"] = schema.Version
+
+	respBytes, err := json.Marshal(resp)
+	if err != nil {
+		http.Error(w, "failed to marshal response to JSON", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(respBytes)
 }
 
 // GetSchemaHandler handles the API for retrieving a specific version of a schema
 func (ah *APIHandler) GetSchemaHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	filename := vars["filename"]
-	version := vars["version"]
+
+	filename, ok := vars["filename"]
+	if !ok {
+		http.Error(w, "filename not found in request", http.StatusBadRequest)
+		return
+	}
+
+	version, ok := vars["version"]
+	if !ok {
+		http.Error(w, "version not found in request", http.StatusBadRequest)
+		return
+	}
 	versionInt, err := strconv.Atoi(version)
 	if err != nil {
 		http.Error(w, "Version is not an integer", http.StatusBadRequest)
@@ -183,7 +164,11 @@ func (ah *APIHandler) GetLatestSchemaHandler(w http.ResponseWriter, r *http.Requ
 
 	fmt.Println("Get Latest Schema Handler Called")
 	vars := mux.Vars(r)
-	filename := vars["filename"] // TODO error handling
+	filename, ok := vars["filename"]
+	if !ok {
+		http.Error(w, "filename not found in request", http.StatusBadRequest)
+		return
+	}
 	fmt.Println("filename: ", filename)
 
 	latestVersion, err := ah.Database.GetLatestSchemaVersion(filename)
@@ -223,7 +208,11 @@ func (ah *APIHandler) GetLatestSchemaHandler(w http.ResponseWriter, r *http.Requ
 
 func (ah *APIHandler) GetAllVersionsHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	filename := vars["filename"]
+	filename, ok := vars["filename"]
+	if !ok {
+		http.Error(w, "filename not found in request", http.StatusBadRequest)
+		return
+	}
 
 
 	fmt.Println("filename: ", filename)

@@ -22,7 +22,7 @@ func NewFileStore(basePath string) *FileStore {
 func (fs *FileStore) SaveSchema(schemaFile []byte, filename string, version int64) error {
 	// Create a new directory for each new file
 	dirPath := filepath.Join(fs.BasePath, filename)
-	err := os.MkdirAll(dirPath, 0755) // TODO check permissions
+	err := os.MkdirAll(dirPath, 0755)
 	if err != nil {
 		return fmt.Errorf("failed to create directory: %v", err)
 	}
@@ -32,7 +32,7 @@ func (fs *FileStore) SaveSchema(schemaFile []byte, filename string, version int6
 
 	filePath := filepath.Join(dirPath, newFilename)
 
-	err = ioutil.WriteFile(filePath, schemaFile, 0644) // TODO check permissions
+	err = ioutil.WriteFile(filePath, schemaFile, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to save schema file: %v", err)
 	}
@@ -82,3 +82,17 @@ func (fs *FileStore) GetLatestSchema(filename string) ([]byte, error) {
 
 	return schemaFile, nil
 }
+
+// DeleteSchema deletes the schema file with the specified filename and version from the storage
+func (fs *FileStore) DeleteSchema(filename string, version int64) error {
+	dirPath := filepath.Join(fs.BasePath, filename, strconv.FormatInt(version, 10))
+	err := os.RemoveAll(dirPath)
+	if err != nil {
+		return fmt.Errorf("failed to delete schema: %v", err)
+	}
+
+	fmt.Println("Schema deleted successfully from storage")
+
+	return nil
+}
+

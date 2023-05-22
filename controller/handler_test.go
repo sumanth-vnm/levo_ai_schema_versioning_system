@@ -81,8 +81,6 @@ func TestUploadSchemaHandler(t *testing.T) {
 	if rr.Body.String() != expectedResponse {
 		t.Errorf("expected response '%s' but got '%s'", expectedResponse, rr.Body.String())
 	}
-
-	// TODO: Add more assertions to verify the behavior of the function
 }
 
 // Mock implementation of the Database interface
@@ -111,7 +109,6 @@ func (s mockStorage) DeleteSchema(filename string, version int) error {
 	return nil
 }
 
-// TODO: Add more mock implementations if needed
 
 func TestGetSchemaHandler(t *testing.T) {
 	// Create a mock HTTP request with path variables

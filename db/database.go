@@ -27,7 +27,7 @@ func Initialize() (*Database, error) {
 	username := "postgres"
 	password := "sam123"
 	dbName := "postgres"
-	connStr := "postgres://" + username + ":" + password + "@localhost/" + dbName + "?sslmode=disable" // TODO - Update the connection string
+	connStr := "postgres://" + username + ":" + password + "@localhost/" + dbName + "?sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to the database: %v", err)
