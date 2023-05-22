@@ -26,6 +26,7 @@ func (fs *FileStore) SaveSchema(schemaFile []byte, filename string, filetype str
 	dirPath := filepath.Join(fs.BasePath, filename)
 	err := os.MkdirAll(dirPath, 0755)
 	if err != nil {
+		fmt.Println("failed to create directory:", err)
 		return fmt.Errorf("failed to create directory: %v", err)
 	}
 
@@ -36,6 +37,7 @@ func (fs *FileStore) SaveSchema(schemaFile []byte, filename string, filetype str
 
 	err = ioutil.WriteFile(filePath, schemaFile, 0644)
 	if err != nil {
+		fmt.Println("failed to save schema file:", err)
 		return fmt.Errorf("failed to save schema file: %v", err)
 	}
 
@@ -51,6 +53,7 @@ func (fs *FileStore) GetSchema(filename string, version int64) ([]byte, error) {
 	schemaFile, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		if os.IsNotExist(err) {
+			fmt.Println("schema file does not exist")
 			return nil, fmt.Errorf("schema file '%s' version '%d' does not exist", filename, version)
 		}
 		return nil, fmt.Errorf("failed to read schema file: %v", err)
@@ -66,6 +69,7 @@ func (fs *FileStore) DeleteSchema(filename string, version int64) error {
 	dirPath := filepath.Join(fs.BasePath, filename, strconv.FormatInt(version, 10) + fileType)
 	err := os.RemoveAll(dirPath)
 	if err != nil {
+		fmt.Println("failed to delete schema:", err)
 		return fmt.Errorf("failed to delete schema: %v", err)
 	}
 

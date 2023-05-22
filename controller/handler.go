@@ -47,7 +47,8 @@ func (ah *APIHandler) UploadSchemaHandler(w http.ResponseWriter, r *http.Request
 
 	schemaFile, err := ioutil.ReadAll(file)
 	if err != nil {
-		http.Error(w, "failed to read file 2", http.StatusInternalServerError)
+		fmt.Println("failed to read file", err)
+		http.Error(w, "failed to read file", http.StatusInternalServerError)
 		return
 	}
 
@@ -146,12 +147,14 @@ func (ah *APIHandler) GetSchemaHandler(w http.ResponseWriter, r *http.Request) {
 
 	schema, err := ah.Database.GetSchema(filename, int64(versionInt))
 	if err != nil {
+		fmt.Println("failed to get schema from database:", err)
 		http.Error(w, "schema not found", http.StatusNotFound)
 		return
 	}
 
 	schemaFile, err := ah.Storage.GetSchema(schema.Filename, schema.Version)
 	if err != nil {
+		fmt.Println("failed to get schema from storage:", err)
 		http.Error(w, "failed to read schema file", http.StatusInternalServerError)
 		return
 	}
@@ -173,12 +176,14 @@ func (ah *APIHandler) GetLatestSchemaHandler(w http.ResponseWriter, r *http.Requ
 
 	latestVersion, err := ah.Database.GetLatestSchemaVersion(filename)
 	if err != nil {
+		fmt.Println("failed to get latest schema version:", err)
 		http.Error(w, "failed to get latest schema version", http.StatusInternalServerError)
 		return
 	}
 
 	schemaFile, err := ah.Storage.GetSchema(filename, latestVersion)
 	if err != nil {
+		fmt.Println("failed to get schema from storage:", err)
 		http.Error(w, "failed to read schema file", http.StatusInternalServerError)
 		return
 	}
@@ -220,6 +225,7 @@ func (ah *APIHandler) GetAllVersionsHandler(w http.ResponseWriter, r *http.Reque
 	// Call the storage method to retrieve the versions for the specified filename
 	versions, err := ah.Database.GetAllVersionsForSchema(filename)
 	if err != nil {
+		fmt.Println("failed to get versions for schema:", err)
 		http.Error(w, "failed to get versions for schema", http.StatusInternalServerError)
 		return
 	}
@@ -235,7 +241,6 @@ func (ah *APIHandler) GetAllVersionsHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	
-
 	// Set the response headers and write the JSON versions
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(jsonVersions)

@@ -30,11 +30,13 @@ func Initialize() (*Database, error) {
 	connStr := "postgres://" + username + ":" + password + "@localhost/" + dbName + "?sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
+		fmt.Println("failed to open db", err)
 		return nil, fmt.Errorf("failed to connect to the database: %v", err)
 	}
 
 	err = db.Ping()
 	if err != nil {
+		fmt.Println("failed to ping db", err)
 		return nil, fmt.Errorf("failed to ping the database: %v", err)
 	}
 

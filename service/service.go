@@ -12,6 +12,7 @@ func ValidateJSONSchema(schemaFile []byte) error {
 	var data interface{}
 	err := json.Unmarshal(schemaFile, &data)
 	if err != nil {
+		fmt.Println("failed to parse JSON schema:", err)
 		return fmt.Errorf("failed to parse JSON schema: %v", err)
 	}
 
@@ -23,6 +24,7 @@ func ValidateYAMLSchema(schemaFile []byte) error {
 	var data interface{}
 	err := yaml.Unmarshal(schemaFile, &data)
 	if err != nil {
+		fmt.Println("failed to parse YAML schema:", err)
 		return fmt.Errorf("failed to parse YAML schema: %v", err)
 	}
 
@@ -44,6 +46,7 @@ func ValidateSchema(schemaFile []byte, fileType string) error {
 			return err
 		}
 	} else {
+		fmt.Println("unsupported file type:", fileType)
 		return fmt.Errorf("unsupported file type: %s", fileType)
 	}
 
