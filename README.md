@@ -19,9 +19,17 @@ Follow these steps to clone and set up the project:
    gh repo clone sumanth-vnm/levo_ai_schema_versioning_system
    ```
 
-2. Open a terminal in the installed repos' root directory and initialize go module using "go mod init example.com/levo_app"
+2. Open a terminal in the installed repos' root directory and initialize go module using
 
-3. install dependencies using "go mod tidy"
+    ```terminal
+   go mod init example.com/levo_app
+   ```
+
+3. Install dependencies using
+
+    ```terminal
+   go mod tidy
+   ```
 
 
 ### Postgres database connection
@@ -60,6 +68,31 @@ Follow the below steps, to set up the postgres database connection to the go pro
 	password := "sam123"
 	dbName := "levo_app_db"
     ```
+
+## Usage
+
+### Run the project
+
+1. to run this project, use the following command:
+
+    ```terminal
+    go run main.go
+    ```
+2. This will start the server at port 8080. if port needs to be changed, update the port number in the file "main.go" which looks like below:
+
+    ```terminal
+    http.ListenAndServe(":8080", router)
+    ```
+
+### API endpoints
+
+Following are the API endpoints implemented in this project:
+```terminal
+localhost:8080/upload/schema - (POST) - to upload a new schema file[JSON/Yaml]
+localhost:8080/getLatestSchema/{{filename}} - (GET) - to get the latest schema file
+localhost:8080/getSchemaByVersion/{{filename}}/{version} - (GET) - to get the schema file of a particular file name and version
+localhost:8080/getAllVersions/{{filename}} - (GET) - to get all the schema files
+```
 
 
 
