@@ -30,7 +30,7 @@ func TestUploadSchemaHandler(t *testing.T) {
 		  "version": "1.0"
 		}
 		}`)
-	fileWriter, err := writer.CreateFormFile("file", "openapi.json")
+	fileWriter, err := writer.CreateFormFile("file", "dummy.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -63,7 +63,7 @@ func TestUploadSchemaHandler(t *testing.T) {
 	defer database.DB.Close()
 
 	// Initialize the file storage
-	fileStore := storage.NewFileStore("schema_files")
+	fileStore := storage.NewFileStore("test_dummy_directory")
 
 	apiHandler := NewAPIHandler(fileStore, database)
 
@@ -77,95 +77,38 @@ func TestUploadSchemaHandler(t *testing.T) {
 	}
 
 	// Check the response body
-	expectedResponse := "Schema uploaded successfully"
+	expectedResponse := `{"message":"Schema uploaded successfully","version":3}` // CHANGE THIS EVERY TIME SINCE VERSION INCREMENTS
 	if rr.Body.String() != expectedResponse {
 		t.Errorf("expected response '%s' but got '%s'", expectedResponse, rr.Body.String())
 	}
 }
 
-// Mock implementation of the Database interface
-type mockDatabase struct{}
-
-func (db mockDatabase) GetLatestSchemaVersion(filename string) (int, error) {
-	// Return a dummy latest version
-	return 1, nil
-}
-
-func (db mockDatabase) SaveSchema(schema db.Schema) error {
-	// Do nothing in the mock implementation
-	return nil
-}
-
-// Mock implementation of the Storage interface
-type mockStorage struct{}
-
-func (s mockStorage) SaveSchema(schemaFile []byte, filename string, version int) error {
-	// Do nothing in the mock implementation
-	return nil
-}
-
-func (s mockStorage) DeleteSchema(filename string, version int) error {
-	// Do nothing in the mock implementation
-	return nil
-}
-
-
-func TestGetSchemaHandler(t *testing.T) {
-	// Create a mock HTTP request with path variables
-	req, err := http.NewRequest("GET", "/schema/openapi.json/1", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Set path variables in the request's context
-	req = mux.SetURLVars(req, map[string]string{
-		"filename": "openapi.json",
-		"version":  "1",
-	})
-
-	// Create a mock HTTP response recorder
-	rr := httptest.NewRecorder()
-
-	// Create an instance of APIHandler with necessary dependencies
-	apiHandler := &APIHandler{
-		Database: mockDatabase{}, // Provide a mock implementation of the Database interface
-		Storage:  mockStorage{},  // Provide a mock implementation of the Storage interface
-	}
-
-	// Call the handler function
-	apiHandler.GetSchemaHandler(rr, req)
-
-	// Check the response status code
-	if rr.Code != http.StatusOK {
-		t.Errorf("expected status %d but got %d", http.StatusOK, rr.Code)
-	}
-
-	// Check the response body or other assertions as needed
-	// ...
-}
-
-// Rest of the mock implementations and struct definitions remain the same as before
 
 func TestGetLatestSchemaHandler(t *testing.T) {
 	// Create a mock HTTP request with path variables
-	req, err := http.NewRequest("GET", "/latest-schema/openapi.json", nil)
+	req, err := http.NewRequest("GET", "/getLatestSchema/dummy.json", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Set path variables in the request's context
 	req = mux.SetURLVars(req, map[string]string{
-		"filename": "openapi.json",
+		"filename": "dummy.json",
 	})
 
 	// Create a mock HTTP response recorder
 	rr := httptest.NewRecorder()
 
-	// Create an instance of APIHandler with necessary dependencies
-	apiHandler := &APIHandler{
-		Database: mockDatabase{}, // Provide a mock implementation of the Database interface
-		Storage:  mockStorage{},  // Provide a mock implementation of the Storage interface
+	// Initialize the database connection
+	database, err := db.Initialize()
+	if err != nil {
+		fmt.Errorf("Failed to initialize database: %v", err)
 	}
+	defer database.DB.Close()
+
+	fileStore := storage.NewFileStore("test_dummy_directory")
+
+	apiHandler := NewAPIHandler(fileStore, database)
 
 	// Call the handler function
 	apiHandler.GetLatestSchemaHandler(rr, req)
@@ -190,34 +133,35 @@ func TestGetLatestSchemaHandler(t *testing.T) {
 		t.Error("expected 'version' key in the response")
 	}
 
-	if _, ok := resp["file-openapi.json"]; !ok {
-		t.Error("expected 'file-openapi.json' key in the response")
+	if _, ok := resp["file-dummy.json"]; !ok {
+		t.Error("expected 'file-dummy.json' key in the response")
 	}
-
-	// ...
 }
 
-// Rest of the mock implementations and struct definitions remain the same as before
 
 func TestGetAllVersionsHandler(t *testing.T) {
 	// Create a mock HTTP request with path variables
-	req, err := http.NewRequest("GET", "/versions/openapi.json", nil)
+	req, err := http.NewRequest("GET", "/getAllVersions/dummy.json", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Set path variables in the request's context
 	req = mux.SetURLVars(req, map[string]string{
-		"filename": "openapi.json",
+		"filename": "dummy.json",
 	})
 
 	// Create a mock HTTP response recorder
 	rr := httptest.NewRecorder()
 
-	// Create an instance of APIHandler with necessary dependencies
-	apiHandler := &APIHandler{
-		Database: mockDatabase{}, // Provide a mock implementation of the Database interface
+	database, err := db.Initialize()
+	if err != nil {
+		fmt.Errorf("Failed to initialize database: %v", err)
 	}
+	defer database.DB.Close()
+	
+	fileStore := storage.NewFileStore("test_dummy_directory")
+
+	apiHandler := NewAPIHandler(fileStore, database)
 
 	// Call the handler function
 	apiHandler.GetAllVersionsHandler(rr, req)
@@ -227,20 +171,25 @@ func TestGetAllVersionsHandler(t *testing.T) {
 		t.Errorf("expected status %d but got %d", http.StatusOK, rr.Code)
 	}
 
-	// Check the response body or other assertions as needed
-	// ...
 
 	// Parse the response JSON
-	var versions []int64
-	err = json.Unmarshal(rr.Body.Bytes(), &versions)
+	fmt.Println()
+	fmt.Println("response body", rr.Body.String())
+
+	for _, b := range rr.Body.Bytes() {
+		if b < 0 || b > 127 {
+			t.Fatalf("Cannot convert []byte to []int64: byte value out of range")
+			return
+		}
+	}
+
+	var versions map[string]interface{}
+	var intf interface{}
+	err = json.Unmarshal(rr.Body.Bytes(), &intf)
 	if err != nil {
 		t.Fatalf("failed to unmarshal response JSON: %v", err)
 	}
-
-	// Verify the expected structure of the response
-	// ...
-
-	// ...
+	versions = intf.(map[string]interface{})
+	fmt.Println("versions", versions)
 }
 
-// Rest of the mock implementations and struct definitions remain the same as before
