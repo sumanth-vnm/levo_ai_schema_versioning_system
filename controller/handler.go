@@ -80,7 +80,7 @@ func (ah *APIHandler) UploadSchemaHandler(w http.ResponseWriter, r *http.Request
 	fmt.Println("Latest version fetched Succesfully")
 	version := latestVersion + 1
 
-	err = ah.Storage.SaveSchema(schemaFile, filename, version)
+	err = ah.Storage.SaveSchema(schemaFile, filename, fileType, version)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

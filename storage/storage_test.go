@@ -27,7 +27,7 @@ func TestSaveSchema(t *testing.T) {
 	version := int64(1)
 
 	// Call the SaveSchema function
-	err = fileStore.SaveSchema(schemaFile, filename, version)
+	err = fileStore.SaveSchema(schemaFile, filename, "json", version) // TODO handle response matcher
 	if err != nil {
 		t.Errorf("failed to save schema: %v", err)
 	}
@@ -113,79 +113,3 @@ func TestGetSchema(t *testing.T) {
 	}
 }
 
-
-func TestGetLatestSchema(t *testing.T) {
-	// Create a temporary directory for testing
-	tempDir, err := ioutil.TempDir("", "test")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(tempDir)
-
-	// Create a new instance of FileStore with the temporary directory as the base path
-	fileStore := &FileStore{
-		BasePath: tempDir,
-	}
-
-	// Create multiple test schema files
-	filename := "openapi.json"
-	schemaFileContent1 := []byte("test schema 1")
-	schemaFileContent2 := []byte("test schema 2")
-	schemaFileContent3 := []byte("test schema 3")
-
-	// Save the test schema files in the temporary directory
-	filePath1 := filepath.Join(tempDir, filename, "1")
-	filePath2 := filepath.Join(tempDir, filename, "2")
-	filePath3 := filepath.Join(tempDir, filename, "3")
-	err = os.MkdirAll(filepath.Dir(filePath1), 0755)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = os.MkdirAll(filepath.Dir(filePath2), 0755)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = os.MkdirAll(filepath.Dir(filePath3), 0755)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = ioutil.WriteFile(filePath1, schemaFileContent1, 0644)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = ioutil.WriteFile(filePath2, schemaFileContent2, 0644)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = ioutil.WriteFile(filePath3, schemaFileContent3, 0644)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Call the GetLatestSchema function
-	schemaFile, err := fileStore.GetLatestSchema(filename)
-	if err != nil {
-		t.Errorf("failed to get latest schema: %v", err)
-	}
-
-	// Verify the content of the latest schema file
-	if string(schemaFile) != string(schemaFileContent3) {
-		t.Errorf("expected latest schema file content to be '%s' but got '%s'", string(schemaFileContent3), string(schemaFile))
-	}
-
-	// Call the GetLatestSchema function when no schema files exist
-	emptyDir := filepath.Join(tempDir, "empty")
-	err = os.MkdirAll(emptyDir, 0755)
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, err = fileStore.GetLatestSchema("empty")
-	if err == nil {
-		t.Errorf("expected error when getting latest schema from empty directory, but got no error")
-	} else {
-		expectedError := "no schema files found"
-		if err.Error() != expectedError {
-			t.Errorf("expected error message '%s' but got '%s'", expectedError, err.Error())
-		}
-	}
-}

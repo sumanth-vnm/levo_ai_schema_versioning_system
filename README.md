@@ -90,21 +90,28 @@ Following are the API endpoints implemented in this project:
 
 ```terminal
 localhost:8080/upload/schema - (POST) - to upload a new schema file[json/yaml]
+    Note: Use the field key "file" inside body to upload any schema file
+    Output: If successful, returns the "version" and success "message"
 
 localhost:8080/getLatestSchema/{{filename}} - (GET) - to get the latest schema file
+     Output: If successful, returns the latest schema file with field "filename" and "version" number
 
 localhost:8080/getSchemaByVersion/{{filename}}/{version} - (GET) - to get the schema file of a particular file name and version
+     Output: If successful, returns the schema file of requested version number
 
 localhost:8080/getAllVersions/{{filename}} - (GET) - to get all the schema files
+     Output: If successful, returns "available_versions" array with all the versions of the requested file name
 ```
+
+1. Once a schema is uploaded, The uploaded files will be stored under "schema_uploads" folder in the root directory of the project.
+
+2. For every new schema file uploaded, a new directory will be created with the name of the file under the "schema_uploads" folder.
+
+3. Inside the directory of the uploaded file, naming of the different versions will be 1.json, 2.json, 3.json, etc. or with yaml type extensions.
 
 ### Postman collection
 
-The following postman collection can be used to test the API endpoints:
-
-```terminal
-
-```
+a postman collection json file is added in the repository at the root folder named "Levo.ai.postman_collection.json". This file can be imported into postman to test the API endpoints.
 
 
 

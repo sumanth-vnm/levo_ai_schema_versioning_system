@@ -1,0 +1,105 @@
+{
+	"info": {
+		"_postman_id": "c4ab861e-a25f-4c3c-82c2-cf2b4e5245a7",
+		"name": "Levo.ai",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "27535060",
+		"_collection_link": "https://www.postman.com/spacecraft-technologist-37612017/workspace/levo-sumanth/collection/27535060-c4ab861e-a25f-4c3c-82c2-cf2b4e5245a7?action=share&creator=27535060&source=collection_link"
+	},
+	"item": [
+		{
+			"name": "Get All Schema Versions",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/getAllVersions/openapi.yaml",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"getAllVersions",
+						"openapi.yaml"
+					],
+					"query": [
+						{
+							"key": "filename",
+							"value": null,
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get schema with filename and version",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/getSchemaByVersion/openapi.json/2",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"getSchemaByVersion",
+						"openapi.json",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get latest schema by filename",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/getLatestSchema/openapi.json",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"getLatestSchema",
+						"openapi.json"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "upload schema",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/D:/github.com/sumanth-vnm/sample schemas/openapi.json"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8080/upload/schema",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"upload",
+						"schema"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

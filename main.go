@@ -20,7 +20,7 @@ func main() {
 	defer database.DB.Close()
 
 	// Initialize the file storage
-	fileStore := storage.NewFileStore("schema_files") // Give the base path as param in NewFileStore
+	fileStore := storage.NewFileStore("schema_uploads") // Give the base path as param in NewFileStore
 
 	// Create the API handler
 	apiHandler := controller.NewAPIHandler(fileStore, database)
