@@ -15,6 +15,7 @@ import (
 	"example.com/levo_app/service"
 
 	"github.com/gorilla/mux"
+	yaml "gopkg.in/yaml.v2"
 )
 
 // APIHandler represents the API handler
@@ -188,26 +189,59 @@ func (ah *APIHandler) GetLatestSchemaHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+
+	// Check the file type
+	fileType := strings.ToLower(path.Ext(filename))
+	fileType = strings.TrimPrefix(fileType, ".")
+
+	if fileType == "yaml" {
+		resp := make(map[string]interface{})
+		resp["version"] = latestVersion
+
+		var schemaFileYAML map[interface{}]interface{}
+		err = yaml.Unmarshal(schemaFile, &schemaFileYAML)
+		if err != nil {
+			http.Error(w, "failed to unmarshal file to YAML", http.StatusInternalServerError)
+			return
+		}
+		resp["file-" + filename] = schemaFileYAML
+
+		// Creating YAML response
+		respBytes, err := yaml.Marshal(resp)
+		if err != nil {
+			http.Error(w, "failed to marshal response to YAML", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/x-yaml")
+
+		// Write the YAML response
+		w.Write(respBytes)
+
+	} else {
 	
-	// Creating response object
-	resp := make(map[string]interface{})
-	resp["version"] = latestVersion
-	schemaFileJson := make(map[string]interface{})
-	err = json.Unmarshal(schemaFile, &schemaFileJson)
-	if err != nil {
-		http.Error(w, "failed to ummarshal file to JSON", http.StatusInternalServerError)
-		return
-	}
-	resp["file-" + filename] = schemaFileJson
+		// Creating response object
+		resp := make(map[string]interface{})
+		resp["version"] = latestVersion
+		schemaFileJson := make(map[string]interface{})
+		err = json.Unmarshal(schemaFile, &schemaFileJson)
+		if err != nil {
+			http.Error(w, "failed to ummarshal file to JSON", http.StatusInternalServerError)
+			return
+		}
+		resp["file-" + filename] = schemaFileJson
 
-	respBytes, err := json.Marshal(resp)
-	if err != nil {
-		http.Error(w, "failed to marshal response to JSON", http.StatusInternalServerError)
-		return
-	}
+		respBytes, err := json.Marshal(resp)
+		if err != nil {
+			http.Error(w, "failed to marshal response to JSON", http.StatusInternalServerError)
+			return
+		}
 
-	w.Write(respBytes)
+		w.Header().Set("Content-Type", "application/json")
+
+		w.Write(respBytes)
+
+	}
 	
 }
 
