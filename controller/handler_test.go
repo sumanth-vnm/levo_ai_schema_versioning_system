@@ -77,7 +77,7 @@ func TestUploadSchemaHandler(t *testing.T) {
 	}
 
 	// Check the response body
-	expectedResponse := `{"message":"Schema uploaded successfully","version":3}` // CHANGE THIS EVERY TIME SINCE VERSION INCREMENTS
+	expectedResponse := `{"message":"Schema uploaded successfully","version":5}` // CHANGE THIS EVERY TIME SINCE VERSION INCREMENTS
 	if rr.Body.String() != expectedResponse {
 		t.Errorf("expected response '%s' but got '%s'", expectedResponse, rr.Body.String())
 	}
